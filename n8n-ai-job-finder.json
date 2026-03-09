@@ -1,0 +1,697 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://weworkremotely.com/categories/remote-programming-jobs.rss",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -256,
+        -160
+      ],
+      "id": "e3d0bcc1-bd12-48ee-94ac-ddd2a339943b",
+      "name": "HTTP Request WeWorkRemotely"
+    },
+    {
+      "parameters": {
+        "url": "https://remotive.com/api/remote-jobs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -256,
+        48
+      ],
+      "id": "50c360f6-0828-4b33-867c-930cd6de4f06",
+      "name": "HTTP Request Remotive"
+    },
+    {
+      "parameters": {
+        "url": "https://jobicy.com/api/v2/remote-jobs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -256,
+        256
+      ],
+      "id": "defd36a4-25ab-460d-afb7-6e0f3de3e42c",
+      "name": "HTTP Request Jobicy"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -160
+      ],
+      "id": "8f34b23c-1d8f-4c75-b9f6-2ee30c2b83b8",
+      "name": "XML"
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $json.rss.channel.item;\n\nreturn jobs.map(j => ({\n  json: {\n    title: j.title,\n    company: j.title.split(\":\")[0],\n    location: \"Remote\",\n    url: j.link,\n    source: \"weworkremotely\"\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -160
+      ],
+      "id": "3a1f2c74-c650-41de-bbd4-968892ff7154",
+      "name": "Code WeWorkRemotely"
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $json.jobs;\n\nreturn jobs.map(j => ({\n  json: {\n    title: j.title,\n    company: j.company_name,\n    location: j.candidate_required_location,\n    url: j.url,\n    source: \"remotive\"\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        48
+      ],
+      "id": "caad6156-479a-4842-8481-5ad36ebf0911",
+      "name": "Code remotive"
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $json.jobs || [];\n\nreturn jobs.map(j => ({\n  json: {\n    title: j.jobTitle,\n    company: j.companyName,\n    location: j.jobGeo,\n    url: j.url,\n    source: \"jobicy\"\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        256
+      ],
+      "id": "1b0c70ec-2518-4bee-a260-2c7a1f74fd42",
+      "name": "Code jobicy"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI job filtering assistant.\n\nThe user is a final year Computer Science student looking for entry level roles.\n\nOnly keep jobs that match these conditions:\n\n* Role type: Intern, Internship, Trainee, Associate, Graduate, or Junior\n* For BTech Student\n* Experience required: 0–1 years (freshers allowed)\n\nIgnore jobs requiring:\n\n* 2+ years experience\n* Senior / Lead / Principal roles\n* Manager roles\n\nFor each job listing provided, extract the following fields:\n\ncompany\nrole\nlocation\nexperience_required\nskills\napply_link\nsource\n\nThen classify the job level as one of:\nintern, junior, trainee, associate, graduate, or reject.\n\nIf the job is NOT suitable for a fresher, mark:\n\"reject\": true\n\nReturn ONLY valid JSON in this format:\n\n{\n\"company\": \"\",\n\"role\": \"\",\n\"location\": \"\",\n\"experience_required\": \"\",\n\"skills\": [],\n\"apply_link\": \"\",\n\"source\": \"\",\n\"level\": \"\",\n\"reject\": false\n}\n\n\nTitle: {{ $json.title }}\n\nCompany: {{$json.company}}\n\nSource: {{ $json.source }}\n\nURL: {{ $json.url }}\n\nLocation: {{ $json.location }}\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        992,
+        48
+      ],
+      "id": "57e33136-6d86-498e-8765-12fd0f2b39d4",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        224
+      ],
+      "id": "27410d83-64cf-4685-93ee-c817decc8f35",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "koC8ArCCg0UKIylH",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        544,
+        32
+      ],
+      "id": "2bb48553-a404-4fc1-8cfe-c22ebd611cb9",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "title"
+            },
+            {
+              "fieldToAggregate": "company"
+            },
+            {
+              "fieldToAggregate": "location"
+            },
+            {
+              "fieldToAggregate": "url"
+            },
+            {
+              "fieldToAggregate": "source"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        784,
+        48
+      ],
+      "id": "127f99c7-882f-4e12-adb5-d08c3184c5bd",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.text;\n\n// remove markdown formatting\nconst clean = text.replace(/```json|```/g, '').trim();\n\nconst jobs = JSON.parse(clean);\n\n// return each job as separate item\nreturn jobs.map(job => ({ json: job }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        48
+      ],
+      "id": "a85af17b-3768-4806-9264-f85e1e5a27ce",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "12h7DyuJy6Sc39WN9K6RQm7YrKsjWgMM3u7VXdn5BIM8",
+          "mode": "list",
+          "cachedResultName": "n8n tut",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12h7DyuJy6Sc39WN9K6RQm7YrKsjWgMM3u7VXdn5BIM8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12h7DyuJy6Sc39WN9K6RQm7YrKsjWgMM3u7VXdn5BIM8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "company": "={{ $json.company }}",
+            "role": "={{ $json.role }}",
+            "location": "={{ $json.location }}",
+            "apply_link": "={{ $json.apply_link }}",
+            "skill": "={{ $json.skills }}",
+            "source ": "={{ $json.source }}",
+            "experience ": "={{ $json.experience_required }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "skill",
+              "displayName": "skill",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source ",
+              "displayName": "source ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "apply_link",
+              "displayName": "apply_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "experience ",
+              "displayName": "experience ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2000,
+        32
+      ],
+      "id": "87ec910c-e598-49c7-b0b6-c47defd1e835",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dxfwtq6J9lRcJ9r1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "90baf050-9db9-4150-9d67-2a04233e4828",
+              "leftValue": "={{ $json.reject }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1568,
+        48
+      ],
+      "id": "89fbb596-6e9d-44bb-b3f5-3f17e612f806",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "clear",
+        "documentId": {
+          "__rl": true,
+          "value": "12h7DyuJy6Sc39WN9K6RQm7YrKsjWgMM3u7VXdn5BIM8",
+          "mode": "list",
+          "cachedResultName": "n8n tut",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12h7DyuJy6Sc39WN9K6RQm7YrKsjWgMM3u7VXdn5BIM8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12h7DyuJy6Sc39WN9K6RQm7YrKsjWgMM3u7VXdn5BIM8/edit#gid=0"
+        },
+        "keepFirstRow": true
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1792,
+        32
+      ],
+      "id": "2d82c9f4-3ca4-4985-a104-aa6fb82c7146",
+      "name": "Clear sheet",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dxfwtq6J9lRcJ9r1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 18
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -928,
+        48
+      ],
+      "id": "6946ab4b-9150-4555-b62b-5eb29ec789b4",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "content": "## Automated Job Aggregator for Freshers\n\nThis workflow automatically collects job listings from multiple job sources and filters them for entry-level candidates.\n\n### What this workflow does\n1. Fetch job listings from multiple APIs\n2. Convert and normalize job data\n3. Merge all job sources into a single dataset\n4. Use AI to filter relevant roles\n5. Store the final results in Google Sheets\n\n### Target roles\n• Internship  \n• Trainee  \n• Associate  \n• Junior roles  \n• 0–1 years experience\n\n### Purpose\nHelp a final year student automatically discover relevant jobs daily without manually searching job boards.\n",
+        "height": 576,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1696,
+        -432
+      ],
+      "typeVersion": 1,
+      "id": "b32d544b-9b6e-4e2a-8c85-7088b4bb4642",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Schedule Trigger\n\nThis node automatically starts the workflow.\n\n### Purpose\nRun the workflow on a schedule so job data is collected regularly.",
+        "height": 208,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1008,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "d3aac3db-c38e-46ba-864f-fa903eb8fa96",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Job Sources\n\nThis workflow collects job listings from multiple remote job platforms.\n\n### Sources used\n• WeWorkRemotely\n• Remotive\n• Jobicy\n\nThese platforms provide APIs or RSS feeds that allow automated job retrieval.\n\nUsing multiple sources increases the chances of finding relevant opportunities.",
+        "height": 304,
+        "width": 544,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1696,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "30bade8a-0a80-40ec-b8bd-e2f9c2eab20c",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## 🌐 Job Data Sources (HTTP Requests)\n\nThis section fetches job listings from multiple remote job platforms using HTTP requests.\n\n### Sources used\n• WeWorkRemotely – RSS feed for remote programming jobs  \n• Remotive – Public API providing structured remote job listings  \n• Jobicy – Remote job API with job details and metadata  \n\n### What happens here\nEach HTTP Request node retrieves raw job data from its respective platform.\n\nThe response format may vary:\n• XML (RSS feed)\n• JSON (API response)\n\nThese responses are then sent to processing nodes where the data is:\n• parsed\n• cleaned\n• converted into a standardized structure\n\n### Standardized job fields\nAll sources are normalized into the following format:\n• company  \n• role / job title  \n• location  \n• experience requirement  \n• apply link  \n• source platform  \n\nThis ensures that jobs from different platforms can be merged and processed together later in the workflow.",
+        "height": 672,
+        "width": 752,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -352,
+        416
+      ],
+      "typeVersion": 1,
+      "id": "dc88182b-6ec7-48df-9e23-f43263b48ea9",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## AI Filtering\nKeep only fresher roles",
+        "height": 80,
+        "width": 336,
+        "color": "#520576"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        944,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "44252da5-de33-4d31-90b5-16a8f9e8f6a6",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request WeWorkRemotely": {
+      "main": [
+        [
+          {
+            "node": "XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request Jobicy": {
+      "main": [
+        [
+          {
+            "node": "Code jobicy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML": {
+      "main": [
+        [
+          {
+            "node": "Code WeWorkRemotely",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request Remotive": {
+      "main": [
+        [
+          {
+            "node": "Code remotive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code WeWorkRemotely": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code remotive": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code jobicy": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Clear sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Clear sheet": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request WeWorkRemotely",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request Jobicy",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request Remotive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b1b4f8ff-f03a-4808-8168-3895b4351897",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9e47fa0eb55ff2fccb44ae298e08ae1a705e214de9c2e6bebd10bf152e2c83ce"
+  },
+  "id": "N8HLa9SpnFN5cqku",
+  "tags": []
+}
