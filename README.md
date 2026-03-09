@@ -1,5 +1,7 @@
 # AI Job Aggregator using n8n
 
+<img width="1917" height="866" alt="image" src="https://github.com/user-attachments/assets/da7bd446-22f5-4d93-9d37-11d906630a46" />
+
 This project is an automated job discovery workflow built using **n8n**.
 
 It collects job listings from multiple sources and filters them for **fresher / entry-level roles** using AI.
@@ -44,4 +46,3 @@ Trigger → Fetch Jobs → Normalize Data → Merge Sources → AI Filter → Go
 
 ---
 
-<img width="1917" height="866" alt="image" src="https://github.com/user-attachments/assets/da7bd446-22f5-4d93-9d37-11d906630a46" />
