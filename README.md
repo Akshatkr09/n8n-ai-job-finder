@@ -44,4 +44,4 @@ Trigger → Fetch Jobs → Normalize Data → Merge Sources → AI Filter → Go
 
 ---
 
-Built as a portfolio project for learning workflow automation and AI integration.
+<img width="1917" height="866" alt="image" src="https://github.com/user-attachments/assets/da7bd446-22f5-4d93-9d37-11d906630a46" />
